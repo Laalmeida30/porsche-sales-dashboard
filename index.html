@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<!-- Metadados para idioma, responsividade e título exibido pelo navegador. -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Porsche Sales Intelligence</title>
+<!-- O favicon é desenhado pelo JavaScript no canvas. -->
+<link rel="icon" id="fav" href="data:,">
+<!-- Fontes externas usadas no tema e biblioteca que renderiza os gráficos. -->
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- Estilos mantidos em arquivo separado para facilitar manutenção do visual. -->
+<link rel="stylesheet" href="style.css" class="css">
+</head>
+
+<body>
+<div class="wrap">
+  <!-- Marca e identificação do painel. O canvas recebe a ilustração animada. -->
+  <header>
+    <div class="brand">
+      <canvas id="logo" width="112" height="72" style="width:56px;height:36px" role="img" aria-label="Ilustração de um Porsche em movimento"></canvas>
+      <div>
+        <b>Porsche Sales Intelligence</b>
+        <small>Painel comercial · EUA</small>
+      </div>
+    </div>
+  </header>
+  <!-- Resumo da finalidade do dashboard antes dos controles e análises. -->
+  <section class="hero">
+    <h1>Performance comercial <span>em alta rotação</span></h1>
+    <p>Descubra quais modelos lideram em cada cidade, qual ano-modelo mais saiu e onde está o dinheiro. Filtre pelo topo ou converse com o assistente no canto da tela.</p>
+  </section>
+  <!-- Os filtros e os indicadores são preenchidos com os dados do JavaScript. -->
+  <section id="filters" aria-label="Filtros do painel"></section>
+  <section class="kpis" id="kpis" aria-label="Indicadores de vendas"></section>
+  <!-- Área principal de análises; cada cartão corresponde a uma pergunta de negócio. -->
+  <main class="grid">
+    <!-- Mix de modelos por quantidade ou receita; a métrica pode ser alternada. -->
+    <article class="card c7">
+      <div class="top">
+        <div>
+          <div class="q">Pergunta 1</div>
+          <h2 id="t1">Modelos mais vendidos</h2>
+          <p class="s">Quais modelos lideram? Escolha uma cidade para ver o mix local.</p>
+        </div>
+        <div class="seg" id="seg" role="group" aria-label="Métrica do gráfico de modelos">
+          <button type="button" data-m="n" class="on" aria-pressed="true">Vendas</button>
+          <button type="button" data-m="rev" aria-pressed="false">Receita</button>
+        </div>
+      </div>
+      <div class="cv"><canvas id="c1" role="img" aria-label="Gráfico de modelos mais vendidos"></canvas></div>
+    </article>
+    <!-- Distribuição das vendas por ano-modelo. -->
+    <article class="card c5">
+      <div class="q">Pergunta 2</div>
+      <h2>Qual ano-modelo mais saiu?</h2>
+      <p class="s">Vendas por ano-modelo; o líder aparece em vermelho.</p>
+      <div class="cv"><canvas id="c2" role="img" aria-label="Gráfico de vendas por ano-modelo"></canvas></div>
+    </article>
+    <!-- Comparação de volume e receita entre os estados. -->
+    <article class="card c7">
+      <div class="q">Pergunta 3</div>
+      <h2>Quais estados concentram as vendas?</h2>
+      <p class="s">Barras: nº de vendas. Linha dourada: receita (US$ mil).</p>
+      <div class="cv"><canvas id="c3" role="img" aria-label="Gráfico de vendas e receita por estado"></canvas></div>
+    </article>
+    <!-- Gráfico auxiliar do método de pagamento usado. -->
+    <article class="card c5">
+      <div class="q">Apoio</div>
+      <h2>Como o cliente paga?</h2>
+      <p class="s">Mix de formas de pagamento no recorte.</p>
+      <div class="cv"><canvas id="c4" role="img" aria-label="Gráfico de formas de pagamento"></canvas></div>
+    </article>
+    <!-- Receita agrupada por mês, considerando apenas datas válidas e vendas não canceladas. -->
+    <article class="card c12">
+      <div class="q">Apoio</div>
+      <h2>Evolução mensal da receita</h2>
+      <p class="s" id="s5">Somente vendas com data válida.</p>
+      <div class="cv" style="height:230px">
+        <canvas id="c5" role="img" aria-label="Gráfico da evolução mensal da receita"></canvas>
+      </div>
+    </article>
+    <!-- Texto com recomendações calculadas para o recorte de filtros atual. -->
+    <article class="card c5">
+      <div class="q">Recomendações</div>
+      <h2>Leitura executiva</h2>
+      <ul class="ins" id="ins"></ul>
+    </article>
+    <!-- Tabela detalhada com paginação simples e rolagem horizontal em telas pequenas. -->
+    <article class="card c7">
+      <div class="q">Detalhamento</div>
+      <h2>Últimas vendas no recorte</h2>
+      <div class="tw" tabindex="0" aria-label="Tabela de vendas. Deslize horizontalmente para ver todas as colunas.">
+        <table id="tb"></table>
+      </div>
+      <p style="text-align:center;margin:10px 0 0">
+        <button class="btn" id="more" type="button">Mostrar mais</button>
+      </p>
+    </article>
+  </main>
+  <!-- Rodapé preenchido em tempo de execução com observações sobre a base. -->
+  <footer id="foot"></footer>
+</div>
+<!-- Controle flutuante que abre e fecha o assistente local. -->
+<button class="btn" id="ai-b" type="button" aria-controls="ai" aria-expanded="false">✦ Assistente IA</button>
+<!-- Diálogo com histórico de mensagens, exemplos e formulário de perguntas. -->
+<section id="ai" role="dialog" aria-labelledby="ai-title" aria-hidden="true">
+  <div class="ai-head">
+    <div>
+      <h2 id="ai-title">Assistente Porsche</h2>
+      <small>Assistente analítico local: responde com os dados do painel, sem enviar nada para a internet.</small>
+    </div>
+    <button class="ai-close" id="ai-close" type="button" aria-label="Fechar assistente">Fechar</button>
+  </div>
+  <div id="msgs" role="log" aria-live="polite" aria-relevant="additions"></div>
+  <div class="chips" id="chips" role="group" aria-label="Sugestões de perguntas"></div>
+  <form id="fm">
+    <label class="sr-only" for="q">Pergunte sobre as vendas</label>
+    <input id="q" placeholder="Pergunte sobre as vendas..." autocomplete="off">
+    <button class="btn" type="submit">Enviar</button>
+  </form>
+</section>
+<!-- A lógica fica no próprio HTML para o painel funcionar sem etapa de compilação. -->
+<script>
+const D=[{"id":6,"d":null,"m":"718 Cayman","f":"718","y":2022,"p":79500.0,"mi":9800.0,"pay":"Credit Card","c":"Boston","s":"MA","sp":"Kevin Brown","sg":"Delivered"},{"id":7,"d":"2024-03-14","m":"911 Turbo S","f":"911","y":2024,"p":235000.0,"mi":1200.0,"pay":"Wire Transfer","c":"Seattle","s":"WA","sp":"Amanda Scott","sg":"Delivered"},{"id":8,"d":"2024-04-18","m":"Cayenne Coupe","f":"Cayenne","y":2023,"p":112750.0,"mi":6400.0,"pay":"Financing","c":"Austin","s":"TX","sp":"Brian Hall","sg":"In Transit"},{"id":9,"d":null,"m":"Macan S","f":"Macan","y":2021,"p":68900.0,"mi":28.0,"pay":"Cash","c":"Denver","s":"CO","sp":"Jessica White","sg":"Pending"},{"id":10,"d":"2024-05-22","m":"Taycan 4S","f":"Taycan","y":2024,"p":121000.0,"mi":0.0,"pay":"Bank Transfer","c":"Los Angeles","s":"CA","sp":"Thomas King","sg":"Delivered"},{"id":11,"d":"2024-08-06","m":"Panamera 4","f":"Panamera","y":2023,"p":104500.0,"mi":14500.0,"pay":"Credit Card","c":"Miami","s":"FL","sp":"Lisa Ray","sg":"Cancelled"},{"id":12,"d":"2024-07-11","m":"911 Carrera S","f":"911","y":2020,"p":96300.0,"mi":41000.0,"pay":"Lease","c":"New York","s":"NY","sp":"Mark Evans","sg":"Delivered"},{"id":13,"d":"2024-07-15","m":"Cayenne E-Hybrid","f":"Cayenne","y":2022,"p":89750.0,"mi":11744.0,"pay":"Wire Transfer","c":"San Diego","s":"CA","sp":"Nancy Reed","sg":"Pending"},{"id":14,"d":"2024-08-19","m":"718 Boxster","f":"718","y":2021,"p":73500.0,"mi":22300.0,"pay":"Debit Card","c":"Chicago","s":"IL","sp":"George Bell","sg":"In Transit"},{"id":15,"d":"2024-09-02","m":"Macan GTS","f":"Macan","y":2024,"p":95000.0,"mi":3500.0,"pay":"Financing","c":"Phoenix","s":"AZ","sp":"Helen Brooks","sg":"In Transit"},{"id":16,"d":"2024-09-17","m":"Taycan Turbo","f":"Taycan","y":2023,"p":153200.5,"mi":11.0,"pay":"ACH Payment","c":"Dallas","s":"TX","sp":"Samuel Price","sg":"Delivered"},{"id":17,"d":null,"m":"911 GT3","f":"911","y":2024,"p":241000.0,"mi":750.0,"pay":"Wire Transfer","c":"Las Vegas","s":"NV","sp":"Peter Ford","sg":"Pending"},{"id":18,"d":"2024-05-11","m":"Panamera Turbo S","f":"Panamera","y":2022,"p":132000.0,"mi":19250.0,"pay":"Cash","c":"San Jose","s":"CA","sp":"Angela Green","sg":"Delivered"},{"id":19,"d":"2024-12-12","m":"Cayenne Turbo GT","f":"Cayenne","y":2024,"p":188000.0,"mi":2100.0,"pay":"Crypto Payment","c":"Houston","s":"TX","sp":"Victor Stone","sg":"Awaiting Handover"},{"id":20,"d":"2024-12-25","m":"911 Carrera Cabriolet","f":"911","y":2023,"p":127800.0,"mi":12000.0,"pay":"Credit Card","c":"Atlanta","s":"GA","sp":"Rachel Turner","sg":"Delivered"},{"id":21,"d":"2025-01-06","m":"Macan","f":"Macan","y":2021,"p":58900.0,"mi":33700.0,"pay":"Bank Transfer","c":"Orlando","s":"FL","sp":"Chris Moore","sg":"Pending"},{"id":22,"d":null,"m":"718 Spyder RS","f":"718","y":2024,"p":164000.0,"mi":900.0,"pay":"Financing","c":"Portland","s":"OR","sp":"Laura Hill","sg":"In Transit"},{"id":23,"d":"2025-02-14","m":"Taycan Cross Turismo","f":"Taycan","y":2023,"p":118500.0,"mi":7800.0,"pay":"Wire Transfer","c":"Charlotte","s":"NC","sp":"Martin Young","sg":"Delivered"},{"id":24,"d":null,"m":"Cayenne S","f":"Cayenne","y":2022,"p":91300.0,"mi":16000.0,"pay":"Credit Card","c":"Nashville","s":"TN","sp":"Diana Cooper","sg":"Pending"},{"id":25,"d":"2025-03-21","m":"911 Targa 4S","f":"911","y":2024,"p":158750.0,"mi":2500.0,"pay":"Lease","c":"Minneapolis","s":"MN","sp":"Steve Gray","sg":"Delivered"},{"id":26,"d":"2025-03-28","m":"Panamera","f":"Panamera","y":2020,"p":72000.0,"mi":49000.0,"pay":"Bank Transfer","c":"Philadelphia","s":"PA","sp":"Olivia Ross","sg":"Cancelled"},{"id":27,"d":"2025-04-09","m":"Macan Electric","f":"Macan","y":2025,"p":86500.0,"mi":0.0,"pay":"Wire Transfer","c":"San Antonio","s":"TX","sp":"Patrick Wood","sg":"Delivered"},{"id":28,"d":null,"m":"911 Dakar","f":"911","y":2024,"p":270000.0,"mi":1050.0,"pay":"Cash","c":"Salt Lake City","s":"UT","sp":"Karen Diaz","sg":"Awaiting Handover"},{"id":29,"d":"2025-05-12","m":"Taycan GTS","f":"Taycan","y":2023,"p":139000.0,"mi":6250.0,"pay":"Financing","c":"Raleigh","s":"NC","sp":"Justin Cox","sg":"In Transit"},{"id":30,"d":"2025-06-18","m":"Cayenne","f":"Cayenne","y":2021,"p":76800.0,"mi":38400.0,"pay":"Credit Card","c":"Detroit","s":"MI","sp":"Betty Ward","sg":"Delivered"},{"id":31,"d":null,"m":"718 Cayman GT4 RS","f":"718","y":2024,"p":173600.0,"mi":400.0,"pay":"Wire Transfer","c":"Columbus","s":"OH","sp":"Gary Reed","sg":"Pending"},{"id":32,"d":"2025-07-07","m":"911 Carrera GTS","f":"911","y":2022,"p":119900.0,"mi":13600.0,"pay":"Cash","c":"Indianapolis","s":"IN","sp":"Maria Foster","sg":"Delivered"},{"id":33,"d":"2025-07-22","m":"Panamera 4 E-Hybrid","f":"Panamera","y":2023,"p":109250.0,"mi":8900.0,"pay":"Lease","c":"Fort Worth","s":"TX","sp":"Harold Bennett","sg":"In Transit"},{"id":34,"d":"2025-08-14","m":"Macan T","f":"Macan","y":2022,"p":82000.0,"mi":21750.0,"pay":"Wire Transfer","c":"Jacksonville","s":"FL","sp":"Teresa Cook","sg":"Delivered"},{"id":35,"d":"2025-09-01","m":"Taycan Turbo S","f":"Taycan","y":2025,"p":214000.0,"mi":0.0,"pay":"Crypto Payment","c":"San Diego","s":"CA","sp":"Frank Morgan","sg":"Pending"},{"id":36,"d":null,"m":"911 Carrera","f":"911","y":2024,"p":124500.0,"mi":4800.0,"pay":"Credit Card","c":"Tampa","s":"FL","sp":"Natalie","sg":"Delivered"},{"id":37,"d":"2025-09-18","m":"Cayenne S","f":"Cayenne","y":2023,"p":98200.0,"mi":12200.0,"pay":"Bank Transfer","c":"Sacramento","s":"CA","sp":"Eric Woods","sg":"Pending"},{"id":38,"d":"2025-10-04","m":"Macan","f":"Macan","y":2022,"p":67500.0,"mi":24100.0,"pay":"Financing","c":"Cleveland","s":"OH","sp":"Patricia Fox","sg":"Delivered"},{"id":39,"d":"2025-10-12","m":"Taycan","f":"Taycan","y":2025,"p":116900.0,"mi":0.0,"pay":"Wire Transfer","c":"Milwaukee","s":"WI","sp":"Alan Price","sg":"In Transit"},{"id":40,"d":"2025-10-29","m":"Panamera 4S","f":"Panamera","y":2024,"p":112000.0,"mi":9.5,"pay":"Cash","c":"Kansas City","s":"MO","sp":"Sandra Hill","sg":"Delivered"},{"id":41,"d":"2025-02-11","m":"718 Boxster","f":"718","y":2021,"p":74000.0,"mi":31000.0,"pay":"Debit Card","c":"Omaha","s":"NE","sp":"Victor Lee","sg":"Cancelled"},{"id":42,"d":"2025-11-16","m":"911 Turbo","f":"911","y":2024,"p":198300.0,"mi":2400.0,"pay":"Wire Transfer","c":"Albuquerque","s":"NM","sp":"Monica Green","sg":"Awaiting Handover"},{"id":43,"d":"2025-11-18","m":"Cayenne Coupe","f":"Cayenne","y":2023,"p":103750.0,"mi":6773.0,"pay":"Wire Transfer","c":"Tucson","s":"AZ","sp":"Gregory Adams","sg":"Pending"},{"id":44,"d":null,"m":"Macan GTS","f":"Macan","y":2024,"p":93600.0,"mi":5800.0,"pay":"Financing","c":"Fresno","s":"CA","sp":"Laura West","sg":"In Transit"},{"id":45,"d":"2025-12-07","m":"Taycan 4S","f":"Taycan","y":2025,"p":129000.0,"mi":0.0,"pay":"ACH Payment","c":"Virginia Beach","s":"VA","sp":"Henry King","sg":"In Transit"},{"id":46,"d":"2025-12-22","m":"Panamera Turbo","f":"Panamera","y":2022,"p":136000.0,"mi":18400.0,"pay":"Credit Card","c":"Colorado Springs","s":"CO","sp":"Amber Clark","sg":"Delivered"},{"id":47,"d":null,"m":"911 GT3 RS","f":"911","y":2024,"p":286500.0,"mi":700.0,"pay":"Wire Transfer","c":"Arlington","s":"TX","sp":"Peter Lane","sg":"Pending"},{"id":48,"d":"2026-01-08","m":"Cayenne E-Hybrid","f":"Cayenne","y":2023,"p":92800.0,"mi":15000.0,"pay":"Lease","c":"Bakersfield","s":"CA","sp":"Grace Morris","sg":"Delivered"},{"id":49,"d":"2026-01-15","m":"Macan T","f":"Macan","y":2022,"p":72400.0,"mi":19750.0,"pay":"Cash","c":"Mesa","s":"AZ","sp":"Kyle Perry","sg":"Awaiting Handover"},{"id":50,"d":"2026-01-28","m":"Taycan Turbo","f":"Taycan","y":2025,"p":158500.0,"mi":3200.0,"pay":"Crypto Payment","c":"Atlanta","s":"GA","sp":"Megan Reed","sg":"Delivered"},{"id":51,"d":"2026-02-03","m":"718 Cayman","f":"718","y":2021,"p":69900.0,"mi":27600.0,"pay":"Bank Transfer","c":"Long Beach","s":"CA","sp":"Carl Simmons","sg":"Pending"},{"id":52,"d":null,"m":"911 Targa 4","f":"911","y":2024,"p":141250.0,"mi":2100.0,"pay":"Financing","c":"Oakland","s":"CA","sp":"Linda Cole","sg":"In Transit"},{"id":53,"d":"2026-02-19","m":"Panamera","f":"Panamera","y":2020,"p":71500.0,"mi":52000.0,"pay":"Wire Transfer","c":"Tulsa","s":"OK","sp":"Martin Brooks","sg":"Delivered"},{"id":54,"d":"2026-02-25","m":"Cayenne Turbo","f":"Cayenne","y":2023,"p":146800.0,"mi":11300.0,"pay":"Credit Card","c":"Wichita","s":"KS","sp":"Diana Long","sg":"Pending"},{"id":55,"d":"2026-03-01","m":"Macan Electric","f":"Macan","y":2025,"p":89700.0,"mi":0.0,"pay":"Lease","c":"New Orleans","s":"LA","sp":"Steve Ross","sg":"Delivered"},{"id":56,"d":"2026-03-14","m":"911 Carrera S","f":"911","y":2022,"p":104600.0,"mi":15900.0,"pay":"Bank Transfer","c":"Honolulu","s":"HI","sp":"Olivia Cruz","sg":"Cancelled"},{"id":57,"d":null,"m":"Taycan GTS","f":"Taycan","y":2024,"p":142000.0,"mi":6600.0,"pay":"Wire Transfer","c":"Anaheim","s":"CA","sp":"Patrick Wood","sg":"Delivered"},{"id":58,"d":"2026-04-08","m":"Cayenne","f":"Cayenne","y":2021,"p":78400.0,"mi":40250.0,"pay":"Cash","c":"Henderson","s":"NV","sp":"Karen Stone","sg":"Pending"},{"id":59,"d":null,"m":"718 Spyder RS","f":"718","y":2025,"p":169000.0,"mi":850.0,"pay":"Financing","c":"Lexington","s":"KY","sp":"Justin Fox","sg":"In Transit"},{"id":60,"d":"2026-04-21","m":"911 Dakar","f":"911","y":2024,"p":268900.0,"mi":1400.0,"pay":"Credit Card","c":"Riverside","s":"CA","sp":"Betty James","sg":"Delivered"},{"id":61,"d":"2026-04-29","m":"Panamera 4","f":"Panamera","y":2023,"p":101300.0,"mi":12700.0,"pay":"Wire Transfer","c":"Corpus Christi","s":"TX","sp":"Gary Price","sg":"Pending"},{"id":62,"d":"2026-05-05","m":"Macan S","f":"Macan","y":2021,"p":66750.0,"mi":29800.0,"pay":"Cash","c":"St. Louis","s":"MO","sp":"Maria Green","sg":"Delivered"},{"id":63,"d":"2026-05-14","m":"Taycan Cross Turismo","f":"Taycan","y":2024,"p":127900.0,"mi":7500.0,"pay":"Lease","c":"Pittsburgh","s":"PA","sp":"Harold Young","sg":"In Transit"},{"id":64,"d":"2026-05-23","m":"Cayenne Turbo GT","f":"Cayenne","y":2025,"p":200000.0,"mi":1950.0,"pay":"Wire Transfer","c":"Cincinnati","s":"OH","sp":"Teresa Ward","sg":"Delivered"},{"id":65,"d":"2026-06-02","m":"911 Carrera Cabriolet","f":"911","y":2023,"p":132000.0,"mi":8800.0,"pay":"Crypto Payment","c":"Anchorage","s":"AK","sp":"Frank Reed","sg":"Pending"},{"id":66,"d":"2026-06-15","m":"718 Cayman GT4 RS","f":"718","y":2024,"p":176400.0,"mi":600.0,"pay":"Credit Card","c":"Plano","s":"TX","sp":"Angela Moore","sg":"Delivered"},{"id":67,"d":null,"m":"Panamera 4 E-Hybrid","f":"Panamera","y":2022,"p":108500.0,"mi":16200.0,"pay":"Bank Transfer","c":"Newark","s":"NJ","sp":"Rachel West","sg":"Cancelled"},{"id":68,"d":"2026-07-07","m":"Macan","f":"Macan","y":2021,"p":59000.0,"mi":36000.0,"pay":"Financing","c":"Greensboro","s":"NC","sp":"Thomas Fox","sg":"Awaiting Handover"},{"id":69,"d":"2026-07-20","m":"Taycan Turbo S","f":"Taycan","y":2025,"p":218000.0,"mi":0.0,"pay":"Wire Transfer","c":"Lincoln","s":"NE","sp":"Lisa Dunn","sg":"Pending"},{"id":70,"d":null,"m":"Cayenne S","f":"Cayenne","y":2024,"p":99950.0,"mi":5300.0,"pay":"Debit Card","c":"Jersey City","s":"NJ","sp":"Brian Allen","sg":"Delivered"},{"id":71,"d":"2026-04-08","m":"911 Carrera GTS","f":"911","y":2024,"p":121750.0,"mi":5872.0,"pay":"Credit Card","c":"Chandler","s":"AZ","sp":"George Hall","sg":"Delivered"},{"id":72,"d":"2026-08-18","m":"718 Boxster GTS","f":"718","y":2023,"p":91500.0,"mi":13300.0,"pay":"Lease","c":"Reno","s":"NV","sp":"Helen King","sg":"In Transit"},{"id":73,"d":"2026-08-31","m":"Panamera Turbo S","f":"Panamera","y":2022,"p":134000.0,"mi":20100.0,"pay":"Wire Transfer","c":"Buffalo","s":"NY","sp":"Samuel Price","sg":"In Transit"},{"id":74,"d":"2026-09-09","m":"Macan GTS","f":"Macan","y":2024,"p":96800.0,"mi":0.0,"pay":"ACH Payment","c":"Durham","s":"NC","sp":"Peter Ford","sg":"Delivered"},{"id":75,"d":"2026-09-17","m":"Taycan 4S","f":"Taycan","y":2025,"p":131600.0,"mi":2900.0,"pay":"Wire Transfer","c":"Laredo","s":"TX","sp":"Angela Green","sg":"Pending"},{"id":76,"d":"2026-09-28","m":"Cayenne E-Hybrid","f":"Cayenne","y":2023,"p":94300.0,"mi":13100.0,"pay":"Cash","c":"Madison","s":"WI","sp":"Victor Stone","sg":"Delivered"},{"id":77,"d":"2026-10-06","m":"911 Turbo S","f":"911","y":2025,"p":242000.0,"mi":1100.0,"pay":"Crypto Payment","c":"Lubbock","s":"TX","sp":"Rachel Turner","sg":"Awaiting Handover"},{"id":78,"d":"2026-10-16","m":"718 Cayman S","f":"718","y":2022,"p":82750.0,"mi":22500.0,"pay":"Credit Card","c":"Toledo","s":"OH","sp":"Chris Moore","sg":"Cancelled"},{"id":79,"d":"2026-10-29","m":"Macan Electric","f":"Macan","y":2026,"p":91300.0,"mi":0.0,"pay":"Wire Transfer","c":"Irvine","s":"CA","sp":"Laura Hill","sg":"Delivered"},{"id":80,"d":"2026-11-03","m":"Panamera","f":"Panamera","y":2021,"p":79900.0,"mi":44800.0,"pay":"Financing","c":"Garland","s":"TX","sp":"Martin Young","sg":"Pending"},{"id":81,"d":null,"m":"Cayenne Coupe","f":"Cayenne","y":2024,"p":111000.0,"mi":6700.0,"pay":"Bank Transfer","c":"Irving","s":"TX","sp":"Diana Cooper","sg":"In Transit"},{"id":82,"d":"2026-12-11","m":"911 Targa 4S","f":"911","y":2023,"p":156500.0,"mi":4200.0,"pay":"Cash","c":"Chesapeake","s":"VA","sp":"Steve Gray","sg":"Delivered"},{"id":83,"d":"2026-12-24","m":"Taycan","f":"Taycan","y":2025,"p":119900.0,"mi":1250.0,"pay":"Lease","c":"Scottsdale","s":"AZ","sp":"Olivia Ross","sg":"Pending"},{"id":84,"d":null,"m":"Macan T","f":"Macan","y":2022,"p":73200.0,"mi":18600.0,"pay":"Wire Transfer","c":"Norfolk","s":"VA","sp":"Patrick Wood","sg":"Delivered"},{"id":85,"d":"2026-12-28","m":"911 GT3","f":"911","y":2024,"p":224000.0,"mi":3000.0,"pay":"Wire Transfer","c":"Boise","s":"ID","sp":"Karen Diaz","sg":"Awaiting Handover"},{"id":86,"d":"2027-01-15","m":"911 Carrera","f":"911","y":2024,"p":126900.0,"mi":7200.0,"pay":"Credit Card","c":"Orlando","s":"FL","sp":"Kevin Brown","sg":"Delivered"},{"id":87,"d":"2027-01-29","m":"Cayenne","f":"Cayenne","y":2023,"p":84500.0,"mi":21400.0,"pay":"Bank Transfer","c":"San Jose","s":"CA","sp":"Amanda Lee","sg":"Pending"},{"id":88,"d":"2027-02-11","m":"Macan S","f":"Macan","y":2022,"p":69800.0,"mi":26300.0,"pay":"Financing","c":"Tampa","s":"FL","sp":"Brian Hall","sg":"Delivered"},{"id":89,"d":null,"m":"Taycan 4S","f":"Taycan","y":2025,"p":132700.0,"mi":0.0,"pay":"Wire Transfer","c":"Denver","s":"CO","sp":"Jessica White","sg":"In Transit"},{"id":90,"d":"2027-03-05","m":"Panamera","f":"Panamera","y":2021,"p":81000.0,"mi":42.0,"pay":"Cash","c":"Austin","s":"TX","sp":"Thomas King","sg":"Delivered"},{"id":91,"d":"2027-03-18","m":"718 Cayman","f":"718","y":2023,"p":78900.0,"mi":17500.0,"pay":"Debit Card","c":"Seattle","s":"WA","sp":"Victor Lee","sg":"Cancelled"},{"id":92,"d":"2027-04-02","m":"911 Turbo S","f":"911","y":2026,"p":249300.0,"mi":900.0,"pay":"Wire Transfer","c":"Boston","s":"MA","sp":"Monica Green","sg":"Awaiting Handover"},{"id":93,"d":"2027-04-15","m":"Cayenne Coupe","f":"Cayenne","y":2024,"p":108750.0,"mi":5530.0,"pay":"Wire Transfer","c":"Phoenix","s":"AZ","sp":"Gregory Adams","sg":"Pending"},{"id":94,"d":null,"m":"Macan Electric","f":"Macan","y":2026,"p":92600.0,"mi":0.0,"pay":"Financing","c":"Chicago","s":"IL","sp":"Laura West","sg":"In Transit"},{"id":95,"d":"2027-05-12","m":"Taycan Turbo","f":"Taycan","y":2025,"p":164000.0,"mi":0.0,"pay":"ACH Payment","c":"Dallas","s":"TX","sp":"Henry King","sg":"In Transit"},{"id":96,"d":"2027-05-27","m":"Panamera 4S","f":"Panamera","y":2024,"p":119000.0,"mi":13400.0,"pay":"Credit Card","c":"San Francisco","s":"CA","sp":"Amber Clark","sg":"Delivered"},{"id":97,"d":null,"m":"911 GT3","f":"911","y":2026,"p":232500.0,"mi":1700.0,"pay":"Wire Transfer","c":"Las Vegas","s":"NV","sp":"Peter Lane","sg":"Pending"},{"id":98,"d":"2027-06-18","m":"Cayenne E-Hybrid","f":"Cayenne","y":2023,"p":96800.0,"mi":14000.0,"pay":"Lease","c":"Charlotte","s":"NC","sp":"Grace Morris","sg":"Delivered"},{"id":99,"d":"2027-07-03","m":"Macan T","f":"Macan","y":2022,"p":74400.0,"mi":20750.0,"pay":"Cash","c":"Mesa","s":"AZ","sp":"Kyle Perry","sg":"Awaiting Handover"},{"id":100,"d":"2027-07-22","m":"Taycan GTS","f":"Taycan","y":2025,"p":148500.0,"mi":5200.0,"pay":"Crypto Payment","c":"Atlanta","s":"GA","sp":"Megan Reed","sg":"Delivered"},{"id":101,"d":"2027-08-08","m":"718 Boxster","f":"718","y":2021,"p":71900.0,"mi":29600.0,"pay":"Bank Transfer","c":"Long Beach","s":"CA","sp":"Carl Simmons","sg":"Pending"},{"id":102,"d":null,"m":"911 Targa 4","f":"911","y":2024,"p":143250.0,"mi":3100.0,"pay":"Financing","c":"Oakland","s":"CA","sp":"Linda Cole","sg":"In Transit"},{"id":103,"d":"2027-09-19","m":"Panamera Turbo","f":"Panamera","y":2020,"p":137500.0,"mi":48000.0,"pay":"Wire Transfer","c":"Tulsa","s":"OK","sp":"Martin Brooks","sg":"Delivered"},{"id":104,"d":"2027-09-25","m":"Cayenne Turbo GT","f":"Cayenne","y":2025,"p":204800.0,"mi":3300.0,"pay":"Credit Card","c":"Wichita","s":"KS","sp":"Diana Long","sg":"Pending"},{"id":105,"d":"2027-10-01","m":"911 Dakar","f":"911","y":2024,"p":271700.0,"mi":1050.0,"pay":"Lease","c":"New Orleans","s":"LA","sp":"Steve Ross","sg":"Delivered"}];
+// D contém um registro por venda e alimenta localmente filtros, gráficos, indicadores e assistente.
+// Campos: id (identificador), d (data), m (modelo), f (família), y (ano-modelo),
+// p (preço), mi (milhas), pay (pagamento), c (cidade), s (estado), sp (vendedor), sg (etapa).
+// A base embutida permite publicar o painel como página estática sem API ou servidor.
+
+// Atalhos do DOM e normalização textual usada para comparar perguntas sem acentos.
+const $=i=>document.getElementById(i),N=s=>String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+// Ano da venda é derivado da data; registros sem data ficam na categoria "Sem data".
+D.forEach(r=>{r.yr=r.d?r.d.slice(0,4):'Sem data'});
+// Relação entre chaves da base e rótulos visíveis nos controles.
+const KEYS=[['f','Modelo'],['y','Ano-modelo'],['yr','Ano da venda'],['s','Estado'],['c','Cidade'],['pay','Pagamento'],['sg','Entrega']];
+const F={};let metric='n',shown=10;const charts={};
+// Valores únicos alimentam os filtros, ordenados em português e com suporte a números.
+const uniq=k=>[...new Set(D.map(r=>r[k]))].sort((a,b)=>String(a).localeCompare(String(b),'pt',{numeric:true}));
+// Formatação monetária, valores abreviados e percentuais para indicadores e tooltips.
+const usd=n=>'US$ '+Math.round(n).toLocaleString('pt-BR'),mi=n=>n>=1e6?'US$ '+(n/1e6).toLocaleString('pt-BR',{maximumFractionDigits:2})+' mi':usd(n),pc=x=>(x*100).toLocaleString('pt-BR',{maximumFractionDigits:0})+'%';
+// Vendas canceladas contam como registro, mas não entram no cálculo de receita.
+const rev=rows=>rows.reduce((a,r)=>a+(r.sg==='Cancelled'?0:r.p),0);
+// Agrega quantidade e receita não cancelada por uma dimensão, como modelo ou estado.
+const agg=(rows,k)=>{const m={};rows.forEach(r=>{const o=m[r[k]]??={n:0,rev:0};o.n++;if(r.sg!=='Cancelled')o.rev+=r.p});return Object.entries(m).map(([key,o])=>({key,...o}))};
+// Cria as opções dos sete filtros diretamente a partir dos valores presentes na base.
+$('filters').innerHTML=KEYS.map(([k,l])=>`<label>${l}<select id="f_${k}"><option value="">Todos</option>${uniq(k).map(v=>`<option>${v}</option>`).join('')}</select></label>`).join('')+'<button class="btn" id="clr" type="button">Limpar filtros</button>';
+KEYS.forEach(([k])=>$('f_'+k).onchange=e=>{F[k]=e.target.value;shown=10;render()});
+// Mantém selects e estado interno sincronizados, inclusive ao filtrar pelo assistente.
+const setF=o=>{KEYS.forEach(([k])=>{F[k]=o[k]?String(o[k]):'';$('f_'+k).value=F[k]});shown=10;render()};
+$('clr').onclick=()=>setF({});
+document.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{metric=b.dataset.m;document.querySelectorAll('#seg button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',String(x===b))});render()});
+$('more').onclick=()=>{shown+=10;render()};
+// Retorna linhas que atendem simultaneamente a todos os filtros ativos.
+const cur=()=>D.filter(r=>KEYS.every(([k])=>!F[k]||String(r[k])===F[k]));
+// Aparência comum dos gráficos e substituição das instâncias ao redesenhá-los.
+Chart.defaults.color='#8b93a1';Chart.defaults.font.family='Barlow,system-ui,sans-serif';Chart.defaults.borderColor='#262a32';
+const mk=(id,cfg)=>{charts[id]?.destroy();cfg.options={maintainAspectRatio:false,...cfg.options};charts[id]=new Chart($(id),cfg)};
+// Paleta de cores usada nas categorias do gráfico de pagamentos.
+const PAL=['#d5001c','#f5c400','#c9ced6','#7d8794','#4a5260','#e8838f','#a38400','#2d333d','#ff6b6b'];
+// Atualiza indicadores, gráficos, recomendações, tabela e rodapé para o recorte selecionado.
+function render(){
+ const rows=cur(),n=rows.length,R=rev(rows),live=rows.filter(r=>r.sg!=='Cancelled').length;
+ const top=(k,by='n')=>agg(rows,k).sort((a,b)=>b[by]-a[by])[0];
+ const lm=top('m'),ly=top('y'),dl=rows.filter(r=>r.sg==='Delivered').length;
+ // Receita e ticket excluem cancelamentos; contagens mantêm todos os registros.
+ $('kpis').innerHTML=[['Vendas registradas',n,`${n-live} canceladas`],['Receita (sem cancelados)',mi(R),'soma dos preços em US$'],['Ticket médio',live?mi(R/live):'—','por venda não cancelada'],['Modelo líder',lm?lm.key:'—',lm?`${lm.n} vendas · ${pc(lm.n/n)}`:''],['Ano-modelo dominante',ly?ly.key:'—',ly?`${ly.n} vendas · ${pc(ly.n/n)}`:''],['Taxa de entrega',n?pc(dl/n):'—',`${dl} entregues`]].map(([a,b,c])=>`<div class="kpi"><span>${a}</span><div class="kv">${b}</div><em>${c}</em></div>`).join('');
+ $('t1').textContent='Modelos mais vendidos · '+(F.c||'todas as cidades');
+ // Três perguntas principais: mix de modelos, ano-modelo e comparação entre estados.
+ const a1=agg(rows,'m').sort((a,b)=>b[metric]-a[metric]).slice(0,8);
+ mk('c1',{type:'bar',data:{labels:a1.map(x=>x.key),datasets:[{data:a1.map(x=>x[metric]),backgroundColor:a1.map((_,i)=>i?'#3a404b':'#d5001c'),borderRadius:4}]},options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>metric==='n'?c.raw+' vendas':usd(c.raw)}}}}});
+ const a2=agg(rows,'y').sort((a,b)=>a.key-b.key),mx=Math.max(0,...a2.map(x=>x.n));
+ mk('c2',{type:'bar',data:{labels:a2.map(x=>x.key),datasets:[{data:a2.map(x=>x.n),backgroundColor:a2.map(x=>x.n===mx?'#d5001c':'#3a404b'),borderRadius:4}]},options:{plugins:{legend:{display:false}}}});
+ const a3=agg(rows,'s').sort((a,b)=>b.n-a.n||b.rev-a.rev).slice(0,10);
+ mk('c3',{data:{labels:a3.map(x=>x.key),datasets:[{type:'bar',label:'Vendas',data:a3.map(x=>x.n),backgroundColor:'#d5001c',borderRadius:4,yAxisID:'y'},{type:'line',label:'Receita (US$ mil)',data:a3.map(x=>Math.round(x.rev/1e3)),borderColor:'#f5c400',backgroundColor:'#f5c400',tension:.3,yAxisID:'y1'}]},options:{scales:{y:{beginAtZero:true,ticks:{precision:0}},y1:{position:'right',beginAtZero:true,grid:{display:false}}}}});
+ // Gráficos de apoio: forma de pagamento e evolução mensal da receita válida.
+ const a4=agg(rows,'pay').sort((a,b)=>b.n-a.n);
+ mk('c4',{type:'doughnut',data:{labels:a4.map(x=>x.key),datasets:[{data:a4.map(x=>x.n),backgroundColor:PAL,borderColor:'#14161b'}]},options:{cutout:'62%',plugins:{legend:{position:innerWidth<=640?'bottom':'right',labels:{boxWidth:10}}}}});
+ const mm={};rows.forEach(r=>{if(r.d&&r.sg!=='Cancelled')mm[r.d.slice(0,7)]=(mm[r.d.slice(0,7)]||0)+r.p});const ks=Object.keys(mm).sort();
+ mk('c5',{type:'line',data:{labels:ks,datasets:[{data:ks.map(k=>Math.round(mm[k]/1e3)),borderColor:'#d5001c',backgroundColor:'rgba(213,0,28,.15)',fill:true,tension:.3,pointRadius:2}]},options:{plugins:{legend:{display:false}},scales:{y:{title:{display:true,text:'US$ mil'}}}}});
+ const sd=rows.filter(r=>!r.d).length;$('s5').textContent=`Somente vendas com data válida e não canceladas. ${sd} venda(s) “Sem data” ficam de fora deste gráfico.`;
+ // Recomendações usam os líderes e proporções encontrados no recorte atual.
+ const ts=top('s','rev'),tp=top('pay'),pe=rows.filter(r=>r.sg==='Pending'||r.sg==='Awaiting Handover').length,ca=n-live;
+ $('ins').innerHTML=n?[`<li><b>${lm.key}</b> lidera com ${lm.n} vendas (${pc(lm.n/n)} do recorte).</li>`,`<li><b>${ts.key}</b> gera a maior receita: ${mi(ts.rev)} (${pc(R?ts.rev/R:0)} do total).</li>`,`<li>Forma de pagamento mais usada: <b>${tp.key}</b> (${pc(tp.n/n)}).</li>`,`<li>${pc(pe/n)} das vendas ainda aguardam fechamento ou retirada; ${pc(ca/n)} foram canceladas.</li>`,`<li>${ly.key} é o ano-modelo mais vendido: vale priorizar estoque dessa geração.</li>`].join(''):'<li>Nenhuma venda neste recorte.</li>';
+ // Tabela ordenada por data mais recente; o botão revela mais dez registros por vez.
+ const tr=[...rows].sort((a,b)=>(b.d||'').localeCompare(a.d||'')).slice(0,shown);
+ $('tb').innerHTML='<caption class="sr-only">Últimas vendas no recorte atual</caption><thead><tr><th scope="col">ID</th><th scope="col">Data</th><th scope="col">Modelo</th><th scope="col">Ano</th><th scope="col">Local</th><th scope="col">Pagamento</th><th scope="col">Entrega</th><th scope="col">Preço</th></tr></thead><tbody>'+tr.map(r=>`<tr><td>${r.id}</td><td>${r.d||'Sem data'}</td><td>${r.m}</td><td>${r.y}</td><td>${r.c}, ${r.s}</td><td>${r.pay}</td><td><span class="tag ${r.sg.split(' ')[0]}">${r.sg}</span></td><td>${usd(r.p)}</td></tr>`).join('')+'</tbody>';
+ $('more').style.display=rows.length>shown?'':'none';
+ $('foot').textContent=`Base: vendas_porsche_tratado.xlsx · ${D.length} registros · ${D.filter(r=>!r.d).length} datas inválidas aparecem como “Sem data” · nomes de clientes foram removidos do arquivo público.`;
+}
+/* ---------- Assistente ---------- */
+// Converte chaves dos filtros em texto e escapa valores antes de usá-los em expressões regulares.
+const desc=f=>Object.entries(f).filter(([,v])=>v).map(([k,v])=>KEYS.find(x=>x[0]===k)[1]+' '+v).join(', ');
+const esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+// Vocabulário local reconhecido para dimensões, etapas de entrega e formas de pagamento.
+const DIMS=[[/ano.?modelo|model year/,'y','ano-modelo'],[/cidade/,'c','cidade'],[/estado|\buf\b/,'s','estado'],[/pagamento|pagam|payment/,'pay','forma de pagamento'],[/vendedor/,'sp','vendedor'],[/\bano\b/,'yr','ano da venda'],[/modelo|carro|porsche/,'m','modelo']];
+const SGK=[[/entregue|delivered/,'Delivered'],[/cancelad|cancelled/,'Cancelled'],[/pendente|pending/,'Pending'],[/transito|in transit|enviad/,'In Transit'],[/aguardando|awaiting/,'Awaiting Handover']];
+const PYK=[[/credito/,'Credit Card'],[/debito/,'Debit Card'],[/dinheiro/,'Cash'],[/financ/,'Financing'],[/leasing/,'Lease'],[/cripto/,'Crypto Payment']];
+// Interpreta comandos para atualizar filtros ou perguntas analíticas sobre a base.
+function ask(q){
+ const t=N(q),f={};
+ // Identifica valores existentes nos filtros e estados escritos por extenso.
+ KEYS.forEach(([k])=>{if(k==='y'||k==='yr')return;uniq(k).forEach(v=>{const cs=k==='s'||(k==='c'&&String(v).length<=5);if(new RegExp('\\b'+esc(cs?String(v):N(v))+'\\b',cs?'':'i').test(cs?q:t))f[k]=v})});
+ SGK.forEach(([r,v])=>{if(r.test(t))f.sg=v});PYK.forEach(([r,v])=>{if(r.test(t))f.pay=v});
+ const ym=t.match(/\b(20\d\d)\b/);if(ym)f[/modelo|model/.test(t)?'y':'yr']=ym[1];
+ const SN={"washington": "WA", "colorado": "CO", "new york": "NY", "arizona": "AZ", "california": "CA", "texas": "TX", "florida": "FL", "utah": "UT", "michigan": "MI", "minnesota": "MN", "indiana": "IN", "wisconsin": "WI", "new mexico": "NM", "nevada": "NV", "kansas": "KS", "missouri": "MO", "idaho": "ID", "alaska": "AK", "nebraska": "NE", "massachusetts": "MA", "illinois": "IL", "north carolina": "NC", "ohio": "OH", "virginia": "VA", "georgia": "GA", "oregon": "OR", "louisiana": "LA", "hawaii": "HI", "kentucky": "KY", "oklahoma": "OK", "pennsylvania": "PA", "tennessee": "TN", "new jersey": "NJ"};Object.entries(SN).forEach(([n,c])=>{if(new RegExp('\\b'+n+'\\b').test(t))f.s=c});
+ const has=Object.keys(f).length;
+ // Comandos explícitos para limpar ou aplicar filtros são processados antes das perguntas.
+ if(/\b(limpar|resetar|reset)\b/.test(t)){setF({});return 'Filtros limpos. Voltamos à base completa.'}
+ if(/^(filtr|aplic|mostr|ver |foque|me mostre)/.test(t)&&has){setF(f);return `Pronto! Apliquei: ${desc(f)}. Os gráficos já foram atualizados.`}
+ // Usa os valores mencionados na pergunta ou, sem novos valores, respeita o recorte já ativo.
+ const scope=has?D.filter(r=>Object.entries(f).every(([k,v])=>String(r[k])===String(v))):cur();
+ const sc=has?`(${desc(f)})`:(Object.values(F).some(Boolean)?`(recorte atual: ${desc(F)})`:'(base completa)');
+ if(!scope.length)return 'Não encontrei vendas nesse recorte. Tente outro filtro.';
+ const dim=DIMS.find(d=>d[0].test(t)),by=/receita|faturamento|valor|revenue|dolar/.test(t)?'rev':'n';
+ if(dim&&/(top|mais|melhor|maior|lider|ranking|qual|quais|principal)/.test(t)){
+  const r=agg(scope,dim[1]).sort((a,b)=>b[by]-a[by]).slice(0,3);
+  return `Top 3 por ${dim[2]} ${sc}, em ${by==='n'?'nº de vendas':'receita'}:\n`+r.map((x,i)=>`${i+1}. ${x.key}: ${by==='n'?x.n+(x.n===1?' venda':' vendas'):usd(x.rev)}`).join('\n');
+ }
+ const R=rev(scope),live=scope.filter(r=>r.sg!=='Cancelled').length,dl=scope.filter(r=>r.sg==='Delivered').length;
+ if(/ticket|medio/.test(t))return `Ticket médio ${sc}: ${usd(live?R/live:0)}.`;
+ if(/cancel/.test(t)){const g=D.filter(r=>Object.entries(f).every(([k,v])=>k==='sg'||String(r[k])===String(v)));const c=g.filter(r=>r.sg==='Cancelled').length;return `${c} de ${g.length} vendas foram canceladas (${pc(g.length?c/g.length:0)}).`}
+ return `Resumo ${sc}:\n• ${scope.length} vendas registradas\n• Receita (sem cancelados): ${usd(R)}\n• Ticket médio: ${usd(live?R/live:0)}\n• ${pc(dl/scope.length)} entregues\nDica: peça um ranking, ex. “top estados por receita”.`;
+}
+// Acrescenta mensagens como texto simples, sem interpretar a pergunta como HTML.
+const say=(t,u)=>{const d=document.createElement('div');d.className='m'+(u?' u':'');d.textContent=t;$('msgs').append(d);$('msgs').scrollTop=1e9};
+$('chips').innerHTML=['Qual modelo vende mais em Atlanta?','Top estados por receita','Ticket médio do Macan','Filtre Taycan em 2025','Quantas vendas foram canceladas?'].map(c=>`<button type="button">${c}</button>`).join('');
+// Fluxo comum de envio, compartilhado pelo formulário e pelos exemplos sugeridos.
+const go=q=>{if(!q.trim())return;say(q,1);say(ask(q))};
+document.querySelectorAll('#chips button').forEach(b=>b.onclick=()=>go(b.textContent));
+$('fm').onsubmit=e=>{e.preventDefault();go($('q').value);$('q').value=''};
+// Sincroniza visibilidade e atributos acessíveis e move o foco ao abrir ou fechar o diálogo.
+const toggleAssistant=open=>{
+ $('ai').classList.toggle('open',open);
+ $('ai').setAttribute('aria-hidden',String(!open));
+ $('ai-b').setAttribute('aria-expanded',String(open));
+ if(open)$('q').focus();else $('ai-b').focus();
+};
+$('ai-b').onclick=()=>toggleAssistant(!$('ai').classList.contains('open'));
+$('ai-close').onclick=()=>toggleAssistant(false);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('ai').classList.contains('open'))toggleAssistant(false)});
+say('Olá! Sou o assistente do painel. Pergunto-me sobre modelos, cidades, estados, pagamentos e receita, ou peça “filtre Macan em Denver” para atualizar os gráficos.');
+/* ---------- Porsche girando (logo + favicon) ---------- */
+// Desenha o carro em canvas; o cosseno simula a rotação horizontal da ilustração.
+function car(ctx,s,a){
+ ctx.clearRect(0,0,s,s);ctx.save();ctx.translate(s/2,s/2);const k=Math.cos(a);ctx.scale(s/64*k,s/64);ctx.translate(-32,-20);
+ ctx.fillStyle=k>0?'#d5001c':'#8f0013';ctx.beginPath();ctx.moveTo(3,27);ctx.bezierCurveTo(2,21,5,18,11,17);ctx.bezierCurveTo(16,9,24,7,31,8);ctx.bezierCurveTo(38,9,43,14,47,16);ctx.bezierCurveTo(55,17,61,19,62,25);ctx.lineTo(61,28);ctx.lineTo(4,28);ctx.closePath();ctx.fill();
+ ctx.fillStyle='#f5c400';ctx.beginPath();ctx.moveTo(15,17);ctx.bezierCurveTo(19,11,25,10,30,10.5);ctx.bezierCurveTo(36,11,40,14,43,16.5);ctx.closePath();ctx.fill();
+ [[17,28.5],[48,28.5]].forEach(([x,y])=>{ctx.fillStyle='#0b0c0f';ctx.beginPath();ctx.arc(x,y,6.5,0,7);ctx.fill();ctx.fillStyle='#c9ced6';ctx.beginPath();ctx.arc(x,y,3,0,7);ctx.fill()});
+ ctx.restore();
+}
+// O canvas do cabeçalho e o canvas temporário do favicon compartilham o mesmo desenho.
+const lg=$('logo').getContext('2d'),fc=document.createElement('canvas');fc.width=fc.height=64;const fx=fc.getContext('2d');let ang=0;
+const drawLogo=()=>{lg.setTransform(1,0,0,1,0,0);lg.clearRect(0,0,112,72);lg.save();lg.translate(0,4);car(lg,112,ang);lg.restore()};
+car(fx,64,ang);$('fav').href=fc.toDataURL('image/png');drawLogo();
+// A animação contínua é desativada se o sistema operacional solicitar movimento reduzido.
+if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setInterval(()=>{ang+=.18;drawLogo()},110);
+// Primeiro desenho do painel, com base completa e sem filtros aplicados.
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,559 @@
+
+/* Paleta e cores compartilhadas; os componentes usam estas variáveis para manter o tema consistente. */
+:root {
+  color-scheme: dark;
+  --bg: #0b0c0f;
+  --card: #14161b;
+  --card2: #1a1d23;
+  --line: #262a32;
+  --txt: #eceff4;
+  --mut: #8b93a1;
+  --red: #d5001c;
+  --gold: #f5c400;
+  --silver: #c9ced6;
+}
+
+/* Regras globais para previsibilidade de dimensões e tipografia. */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(1200px 500px at 85% -10%, #2a0b10 0, transparent 60%), var(--bg);
+  color: var(--txt);
+  font: 15px/1.5 Barlow, system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+.kv,
+.brand b {
+  margin: 0;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  letter-spacing: 0.02em;
+}
+
+button,
+input,
+select {
+  color: var(--txt);
+  font: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* Cabeçalho e apresentação da marca; o container centraliza o conteúdo em telas largas. */
+.wrap {
+  width: min(100%, 1280px);
+  margin: 0 auto;
+  padding: 0 clamp(16px, 3vw, 32px);
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.brand b {
+  font-size: 22px;
+  text-transform: uppercase;
+}
+
+.brand small {
+  display: block;
+  color: var(--mut);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Abertura do dashboard e área de introdução. */
+.hero {
+  padding: 18px 0 26px;
+}
+
+.hero h1 {
+  font-size: clamp(34px, 6vw, 64px);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.hero h1 span {
+  color: var(--red);
+}
+
+.hero p {
+  max-width: 720px;
+  margin: 12px 0 0;
+  color: var(--mut);
+}
+
+/* Filtros gerados pelo JavaScript: grade fluida que evita controles estreitos. */
+#filters {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 145px), 1fr));
+  align-items: end;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgb(20 22 27 / 94%);
+  backdrop-filter: blur(8px);
+}
+
+label {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--mut);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+select,
+#ai input {
+  min-width: 0;
+  min-height: 42px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card2);
+}
+
+.btn {
+  min-height: 42px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--red);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn:hover {
+  filter: brightness(1.15);
+}
+
+/* Indicadores e gráficos organizados em uma grade responsiva de 12 colunas. */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.kpi {
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+}
+
+.kpi span {
+  color: var(--mut);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.kv {
+  margin-top: 4px;
+  font-size: clamp(24px, 3vw, 34px);
+  font-weight: 700;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.kpi em {
+  color: var(--mut);
+  font-size: 12px;
+  font-style: normal;
+}
+
+.kpi:first-child .kv {
+  color: var(--gold);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.c7 {
+  grid-column: span 7;
+}
+
+.c5 {
+  grid-column: span 5;
+}
+
+.c12 {
+  grid-column: span 12;
+}
+
+.card {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+}
+
+/* Aparência dos cartões, títulos, gráficos e seletor de métrica. */
+.q {
+  color: var(--red);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.card h2 {
+  margin: 2px 0 4px;
+  font-size: 24px;
+}
+
+.card p.s {
+  margin: 0 0 10px;
+  color: var(--mut);
+  font-size: 13px;
+}
+
+.cv {
+  position: relative;
+  height: 290px;
+}
+
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.seg {
+  display: flex;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.seg button {
+  padding: 6px 12px;
+  border: 0;
+  background: none;
+  color: var(--mut);
+  cursor: pointer;
+}
+
+.seg button.on {
+  background: var(--red);
+  color: #fff;
+}
+
+/* Recomendações, tabela e etiquetas de status das vendas. */
+ul.ins {
+  margin: 0;
+  padding-left: 18px;
+}
+
+ul.ins li {
+  margin: 0 0 10px;
+}
+
+.tw {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th,
+td {
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
+}
+
+th {
+  color: var(--mut);
+  font-weight: 500;
+}
+
+.tag {
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: #262a32;
+  font-size: 11px;
+}
+
+.tag.Delivered {
+  background: #12351f;
+  color: #6ee79a;
+}
+
+.tag.Cancelled {
+  background: #3b1016;
+  color: #ff8896;
+}
+
+.tag.Pending {
+  background: #3a3112;
+  color: var(--gold);
+}
+
+/* Rodapé informativo e controles flutuantes do assistente. */
+footer {
+  padding: 24px 0 90px;
+  color: var(--mut);
+  font-size: 12px;
+}
+
+#ai-b {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 9;
+  border-radius: 99px;
+  box-shadow: 0 8px 30px #000a;
+}
+
+#ai {
+  position: fixed;
+  right: 18px;
+  bottom: 76px;
+  z-index: 9;
+  display: none;
+  width: min(380px, calc(100vw - 36px));
+  height: min(520px, 70vh);
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: 0 16px 50px #000c;
+}
+
+#ai.open {
+  display: flex;
+}
+
+/* Janela de conversa: cabeçalho, histórico, sugestões e campo de envio. */
+.ai-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ai-head h2 {
+  font-size: 20px;
+}
+
+.ai-head small {
+  display: block;
+  color: var(--mut);
+  font: 12px Barlow, sans-serif;
+}
+
+.ai-close {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card2);
+  cursor: pointer;
+}
+
+#msgs {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  overflow: auto;
+  padding: 12px;
+}
+
+.m {
+  max-width: 88%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--card2);
+  white-space: pre-line;
+}
+
+.m.u {
+  align-self: flex-end;
+  background: var(--red);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 12px 8px;
+}
+
+.chips button {
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: none;
+  color: var(--silver);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.chips button:hover {
+  border-color: var(--gold);
+}
+
+#ai form {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid var(--line);
+}
+
+#ai input {
+  flex: 1;
+}
+
+/* Texto disponível a leitores de tela sem ocupar espaço visual. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+/* Em tablets, os indicadores ficam em três colunas e os cartões empilham. */
+@media (max-width: 1100px) {
+  .kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .c7,
+  .c5 {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Em celulares, controles e cartões usam o espaço disponível e o chat se adapta à altura. */
+@media (max-width: 640px) {
+  header {
+    padding: 14px 0;
+  }
+
+  .brand b {
+    font-size: 18px;
+  }
+
+  .hero {
+    padding: 18px 0 20px;
+  }
+
+  .hero h1 {
+    font-size: clamp(32px, 11vw, 48px);
+  }
+
+  #filters {
+    position: static;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 10px;
+  }
+
+  #filters .btn {
+    grid-column: 1 / -1;
+  }
+
+  .kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .kpi {
+    padding: 12px;
+  }
+
+  .kpi span {
+    font-size: 10px;
+  }
+
+  .card {
+    padding: 14px;
+  }
+
+  .card h2 {
+    font-size: 22px;
+  }
+
+  .top {
+    flex-direction: column;
+  }
+
+  .cv {
+    height: 250px;
+  }
+
+  #ai {
+    right: 12px;
+    bottom: 72px;
+    width: calc(100vw - 24px);
+    height: min(520px, calc(100vh - 96px));
+    height: min(520px, calc(100dvh - 96px));
+  }
+
+  #ai-b {
+    right: 12px;
+    bottom: 12px;
+  }
+}
+
+/* Aparelhos muito estreitos recebem os filtros em coluna única. */
+@media (max-width: 360px) {
+  #filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Evita animações ou rolagem suave quando a pessoa prefere reduzir movimento. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}
